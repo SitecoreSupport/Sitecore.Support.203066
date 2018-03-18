@@ -1,8 +1,8 @@
 ﻿using Sitecore.Analytics.DataAccess.Dictionaries;
 using Sitecore.Diagnostics;
-using System;
+using Sitecore.Analytics.Pipelines.SubmitSessionContext;
 
-namespace Sitecore.Analytics.Pipelines.SubmitSessionContext
+namespace Sitecore.Support.Analytics.Pipelines.SubmitSessionContext
 {
   internal class SaveDevice : SubmitSessionContextProcessor
   {
@@ -12,6 +12,16 @@ namespace Sitecore.Analytics.Pipelines.SubmitSessionContext
       bool flag = args.Session.Device != null;
       if (flag)
       {
+        var deviceFromxConnect =
+          KnownDataDictionaries.Devices.Get(args.Session.Device.DeviceId, LookupStrategy.BypassCache);
+
+        if (deviceFromxConnect != null &&
+            deviceFromxConnect.LastKnownContactId == args.Session.Device.LastKnownContactId)
+        {
+          //device is already saved from another session.
+          return;
+        }
+
         KnownDataDictionaries.Devices.Put(args.Session.Device);
       }
     }
